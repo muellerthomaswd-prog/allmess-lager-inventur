@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192">
+  <rect width="192" height="192" rx="24" fill="#2b2f26"/>
+  <rect x="18" y="60" width="156" height="72" rx="4" fill="none" stroke="#a8392c" stroke-width="6" transform="rotate(-3 96 96)"/>
+  <text x="96" y="90" text-anchor="middle" font-family="Arial Narrow, sans-serif" font-weight="700" font-size="30" fill="#f1ede2" transform="rotate(-3 96 96)">ALLMESS</text>
+  <text x="96" y="122" text-anchor="middle" font-family="Arial Narrow, sans-serif" font-weight="700" font-size="20" letter-spacing="2" fill="#a8392c" transform="rotate(-3 96 96)">INVENTUR</text>
+</svg>
