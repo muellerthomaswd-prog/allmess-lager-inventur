@@ -262,6 +262,19 @@ h1 {
   margin-bottom: 16px;
   background: var(--white);
 }
+.detected-number-big {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: 26px;
+  text-align: center;
+  word-break: break-all;
+  background: var(--white);
+  border: 1.5px solid var(--ink);
+  border-radius: var(--radius);
+  padding: 24px 14px;
+  margin-bottom: 18px;
+}
+
 .detected-number {
   background: var(--white);
   border: 1px solid var(--paper-line);
@@ -414,6 +427,21 @@ h1 {
   font-weight: 700;
   color: var(--olive-dark);
   margin-left: 12px;
+}
+
+.danger-zone {
+  margin-top: 34px;
+  padding-top: 18px;
+  border-top: 1px dashed var(--ink-soft);
+}
+.btn-danger {
+  border-color: var(--stamp-red);
+  color: var(--stamp-red);
+}
+.danger-note {
+  font-size: 11px;
+  color: var(--ink-soft);
+  margin: 4px 0 16px;
 }
 
 /* ---------- Toast ---------- */

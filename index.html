@@ -75,6 +75,18 @@
     </form>
   </section>
 
+  <!-- ===================== SCAN BESTÄTIGEN ===================== -->
+  <section id="view-confirm" class="view">
+    <header class="view-header">
+      <button class="btn-back" data-back="view-scan">&larr;</button>
+      <h2>Nummer bestätigen</h2>
+    </header>
+    <p class="hint-text">Stimmt das mit der kompletten Artikelnummer unter dem Barcode überein?</p>
+    <div class="detected-number-big" id="confirm-number"></div>
+    <button id="btn-confirm-use" class="btn-primary">Verwenden</button>
+    <button id="btn-confirm-retry" class="btn-secondary">Erneut scannen</button>
+  </section>
+
   <!-- ===================== NEUER ARTIKEL ===================== -->
   <section id="view-newarticle" class="view">
     <header class="view-header">
@@ -206,6 +218,14 @@
     <button id="btn-export-xlsx" class="btn-primary">Als Excel (XLSX) exportieren</button>
     <button id="btn-export-csv" class="btn-secondary">Als CSV exportieren</button>
     <div id="export-status" class="notice hidden"></div>
+
+    <div class="danger-zone">
+      <p class="hint-text">Zurücksetzen</p>
+      <button id="btn-reset-quantities" class="btn-secondary btn-danger">Nur Mengen zurücksetzen</button>
+      <p class="danger-note">Artikel (Namen/Kategorien) bleiben bekannt, alle gezählten Mengen werden auf 0 gesetzt.</p>
+      <button id="btn-reset-all" class="btn-secondary btn-danger">Alles komplett löschen</button>
+      <p class="danger-note">Löscht auch alle angelegten Artikel — kompletter Neustart.</p>
+    </div>
   </section>
 
 </div>

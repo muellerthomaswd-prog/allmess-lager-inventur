@@ -47,6 +47,13 @@ function idbAll(store) {
     r.onerror = () => reject(r.error);
   });
 }
+function idbClear(store) {
+  return new Promise((resolve, reject) => {
+    const r = tx(store, 'readwrite').clear();
+    r.onsuccess = () => resolve();
+    r.onerror = () => reject(r.error);
+  });
+}
 
 function inventoryKey(articleNumber, calibrationYear) {
   return articleNumber + '|' + (calibrationYear || '');
@@ -182,21 +189,72 @@ async function startCamera() {
   }
 }
 
+// Rechnet den sichtbaren Ziel-Rahmen (CSS: .camera-frame { inset: 18% 10% })
+// in Koordinaten des nativen Kamera-Streams um, damit nur Barcodes gezählt
+// werden, die tatsächlich innerhalb des Rahmens liegen — Etiketten mit
+// mehreren Barcodes (z. B. Los-/Datumscode zusätzlich zur Artikelnummer)
+// führen sonst dazu, dass der falsche Code erkannt wird.
+function getFrameRectInVideoCoords(videoEl, wrapEl) {
+  const dispW = wrapEl.clientWidth;
+  const dispH = wrapEl.clientHeight;
+  const vw = videoEl.videoWidth;
+  const vh = videoEl.videoHeight;
+  if (!vw || !vh || !dispW || !dispH) return null;
+
+  const scale = Math.max(dispW / vw, dispH / vh); // object-fit: cover
+  const offsetX = (vw * scale - dispW) / 2;
+  const offsetY = (vh * scale - dispH) / 2;
+
+  const leftDisp = dispW * 0.10, rightDisp = dispW * 0.90;
+  const topDisp = dispH * 0.18, bottomDisp = dispH * 0.82;
+
+  return {
+    x1: (leftDisp + offsetX) / scale,
+    x2: (rightDisp + offsetX) / scale,
+    y1: (topDisp + offsetY) / scale,
+    y2: (bottomDisp + offsetY) / scale,
+  };
+}
+
+function boxCenterInRect(box, rect) {
+  const cx = box.x + box.width / 2;
+  const cy = box.y + box.height / 2;
+  return cx >= rect.x1 && cx <= rect.x2 && cy >= rect.y1 && cy <= rect.y2;
+}
+
 async function detectLoop(detector, videoEl) {
   if (!state.detecting) return;
   try {
     const codes = await detector.detect(videoEl);
     if (codes.length > 0) {
-      const value = codes[0].rawValue.trim();
-      if (value) {
-        state.detecting = false;
-        handleScannedNumber(value);
-        return;
+      const rect = getFrameRectInVideoCoords(videoEl, document.querySelector('.camera-wrap'));
+      const chosen = rect ? codes.find(c => boxCenterInRect(c.boundingBox, rect)) : null;
+      if (chosen) {
+        const value = chosen.rawValue.trim();
+        if (value) {
+          state.detecting = false;
+          onCodeDetected(value);
+          return;
+        }
       }
     }
   } catch (e) { /* transient decode errors are normal, keep looping */ }
   requestAnimationFrame(() => detectLoop(detector, videoEl));
 }
+
+function onCodeDetected(value) {
+  document.getElementById('confirm-number').textContent = value;
+  state.pendingScanNumber = value;
+  showView('view-confirm');
+}
+
+document.getElementById('btn-confirm-use').addEventListener('click', () => {
+  handleScannedNumber(state.pendingScanNumber);
+});
+document.getElementById('btn-confirm-retry').addEventListener('click', () => {
+  showView('view-scan');
+  startCamera();
+});
 
 function stopCamera() {
   state.detecting = false;
@@ -546,6 +604,28 @@ document.getElementById('btn-export-csv').addEventListener('click', async () => 
   a.click();
   URL.revokeObjectURL(url);
   toast('CSV-Export erstellt');
+});
+
+/* =========================================================
+   Zurücksetzen
+   ========================================================= */
+document.getElementById('btn-reset-quantities').addEventListener('click', async () => {
+  const ok = window.confirm('Alle gezählten Mengen wirklich auf 0 zurücksetzen? Bereits angelegte Artikel bleiben erhalten. Vorher exportiert?');
+  if (!ok) return;
+  await idbClear('inventory');
+  clearLastAction();
+  toast('Mengen zurückgesetzt');
+  showView('view-start');
+});
+
+document.getElementById('btn-reset-all').addEventListener('click', async () => {
+  const ok = window.confirm('Wirklich ALLES löschen — auch alle angelegten Artikel? Das kann nicht rückgängig gemacht werden. Vorher exportiert?');
+  if (!ok) return;
+  await idbClear('inventory');
+  await idbClear('articles');
+  clearLastAction();
+  toast('Komplett zurückgesetzt');
+  showView('view-start');
 });
 
 /* =========================================================
