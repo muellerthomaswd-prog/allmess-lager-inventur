@@ -1,4 +1,4 @@
-const CACHE = 'allmess-inventur-v1';
+const CACHE = 'allmess-inventur-v2';
 const APP_SHELL = [
   './',
   './index.html',
@@ -25,10 +25,16 @@ self.addEventListener('activate', (e) => {
 self.addEventListener('fetch', (e) => {
   const url = new URL(e.request.url);
 
-  // App-Shell: cache-first, damit die App immer offline startet
+  // App-Shell: Netzwerk zuerst, damit ein Update sofort ankommt, sobald
+  // online — Cache dient nur als Absicherung, falls mal keine Verbindung
+  // besteht. Damit die App nie an einer veralteten Version hängen bleibt.
   if (url.origin === self.location.origin) {
     e.respondWith(
-      caches.match(e.request).then(cached => cached || fetch(e.request))
+      fetch(e.request).then(resp => {
+        const clone = resp.clone();
+        caches.open(CACHE).then(cache => cache.put(e.request, clone));
+        return resp;
+      }).catch(() => caches.match(e.request))
     );
     return;
   }
